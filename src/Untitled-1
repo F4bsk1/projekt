@@ -1,0 +1,5 @@
+-- database: /Users/Fabbe/AK2/progp/falu-W1/database/account_items.db
+
+-- Use the ▷ button in the top right corner to run the entire file.
+
+SELECT * FROM users;
