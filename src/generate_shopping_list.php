@@ -13,6 +13,13 @@ $userId = $_SESSION['user_id'];
 $db = new SQLite3(__DIR__ . '/../database/account_items.db');
 
 $recommendations = getRecommendedItems($userId, $db);
+
+if (!isset($_SESSION['recommendations_added']) || !$_SESSION['recommendations_added']) {
+    foreach ($recommendations as $item) {
+        addItemToList($userId, $item['ItemID'], $db);
+    }
+    $_SESSION['recommendations_added'] = true; // Mark that recommendations have been added
+}
 $shoppingList = getUserShoppingList($userId, $db);
 $allItems = getAllItems($db);
 
@@ -45,14 +52,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['delete_item_permanentl
 //SKIT I DENNA OM DB updateras direkt (troligtvis) men dock reroute vid klick på spara
 // Handle form submission for finalizing the list
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['finalize_list'])) {
-    // Add recommended items to UserShoppingList
-    foreach ($recommendations as $item) {
-        addItemToList($userId, $item['ItemID'], $db, 1); // Default quantity to 1 for recommendations
-    }
     header("Location: confirm_purchases.php");
     exit();
 }
-//ta bort forech för rekomenderade items
 ?>
 <!DOCTYPE html>
 <html lang="sv">
@@ -72,18 +74,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['finalize_list'])) {
         <h2>Rekommenderad Inköpslista</h2>
         <div class="list-box">
             <ul class="list-group">
-                <?php foreach ($recommendations as $item): ?>
-                    <li class="list-group-item">
-                        <?= htmlspecialchars($item['ItemName']) ?> (rekommenderad)
-                        <form action="generate_shopping_list.php" method="post" style="display:inline;">
-                            <input type="hidden" name="item_id" value="<?= $item['ItemID'] ?>">
-                            <button type="submit" name="delete_item" class="btn btn-danger btn-sm delete-button">Ta bort</button>
-                        </form>
-                    </li>
-                <?php endforeach; ?>
+
                 <?php foreach ($shoppingList as $item): ?>
                     <li class="list-group-item">
-                        <?= htmlspecialchars($item['ItemName']) ?> (<?= htmlspecialchars($item['Quantity']) ?> st)
+                        <?= htmlspecialchars($item['ItemName']) ?> <!--(<?= htmlspecialchars($item['Quantity']) ?> st) -->
                         <form action="generate_shopping_list.php" method="post" style="display:inline;">
                             <input type="hidden" name="item_id" value="<?= $item['ItemID'] ?>">
                             <button type="submit" name="delete_item" class="btn btn-danger btn-sm delete-button">Ta bort</button>
@@ -101,8 +95,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['finalize_list'])) {
                             <option value="<?= $item['ItemID'] ?>"><?= htmlspecialchars($item['ItemName']) ?></option>
                         <?php endforeach; ?>
                     </select>
-                    <label for="quantity">Antal:</label>
-                    <input type="number" name="quantity" id="quantity" class="form-control" value="1" min="1">
                 </div>
                 <button type="submit" name="add_item" class="btn btn-primary">Lägg till</button>
                 <button type="submit" name="finalize_list" class="btn btn-success">Spara och fortsätt</button>

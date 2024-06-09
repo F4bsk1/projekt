@@ -16,8 +16,11 @@ if (session_status() === PHP_SESSION_NONE) {
 </head>
 <body>
     <?php if (isset($_SESSION["logged_in_user"])): ?>
-        <form action="logout.php" method="post" class="logout-button">
-            <button type="submit" class="btn btn-danger">Logga ut</button>
-        </form>
+        <div class="header-buttons">
+            <form action="logout.php" method="post" class="logout-button">
+                <button type="submit" class="btn btn-danger">Logga ut</button>
+            </form>
+            <a href="modify_db.php" class="btn btn-primary">Lägg till hushållsvaror</a>
+        </div>
     <?php endif; ?>
     <div class="container">

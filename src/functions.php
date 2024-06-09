@@ -91,8 +91,25 @@ function getRecommendedItems($userId, $db) {
     $stmt->bindValue(':userId', $userId, SQLITE3_INTEGER);
     $result = $stmt->execute();
     $items = [];
+    $today = new DateTime();
+
     while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
-        $items[] = $row;
+        $lastPurchaseDate = isset($row['LastPurchaseDate']) ? new DateTime($row['LastPurchaseDate']) : null;
+        $avgInterval = floatval($row['AvgInterval']);
+    
+        // Calculate days since last purchase
+        $daysSinceLastPurchase = $lastPurchaseDate ? $lastPurchaseDate->diff($today)->days : null;
+        
+        // Recommend item if it's never been purchased or if it should be repurchased based on the average interval
+        if (is_null($lastPurchaseDate) || $daysSinceLastPurchase > $avgInterval) {
+            $items[] = [
+                'ItemID' => $row['ItemID'],
+                'ItemName' => $row['ItemName'],
+                'LastPurchaseDate' => $row['LastPurchaseDate'],
+                'AvgInterval' => $avgInterval,
+                'DaysSinceLastPurchase' => $daysSinceLastPurchase
+            ];
+        }
     }
     return $items;
 }
@@ -223,6 +240,32 @@ function addReplacement($originalItemId, $replacementItemId, $db) {
     $stmt->bindValue(':replacementItemId', $replacementItemId, SQLITE3_INTEGER);
     $stmt->execute();
 }
+
+function emptyShoppingList($userId, $itemId, $quantity, $db) {
+    $stmt = $db->prepare('DELETE FROM UserShoppingList');
+    $stmt->execute();
+}
+
+function storeSessionHash($userId, $sessionHash) {
+    $db = new SQLite3(__DIR__ . '/../database/account_items.db');
+    $stmt = $db->prepare('UPDATE users SET session_hash = :sessionHash WHERE UserID = :userId');
+    $stmt->bindValue(':sessionHash', $sessionHash, SQLITE3_TEXT);
+    $stmt->bindValue(':userId', $userId, SQLITE3_INTEGER);
+    $stmt->execute();
+    $db->close();
+}
+
+function clearSessionHash($userId) {
+    $db = new SQLite3(__DIR__ . '/../database/account_items.db');
+    $stmt = $db->prepare('UPDATE users SET session_hash = NULL WHERE UserID = :userId');
+    $stmt->bindValue(':userId', $userId, SQLITE3_INTEGER);
+    $stmt->execute();
+    $db->close();
+}
+
+
+
+
 //från labbinstruktionen
 // //Observera att följande funktion är sårbar för sql-injection och behöver förbättras
 // function selectPwd($username){

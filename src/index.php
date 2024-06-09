@@ -13,17 +13,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         if ($userInfo && array_key_exists('Password', $userInfo)) {
             $hashedInput = hash('sha3-512', $password); // Hashing the input password
             if ($hashedInput === $userInfo['Password']) { // Comparing with the hashed password from DB
-                $_SESSION["logged_in_user"] = $username;
-                $_SESSION["user_id"] = $userInfo['UserID']; // Ensure the user ID is set here
-                session_regenerate_id(true); // Secure the session by regenerating the session ID
-                header("Location: generate_shopping_list.php");
-                exit();
-            } else {
-                $errorMessage = "<p style='background-color:Tomato;'>Wrong username or password.</p>";
+                if ($userInfo['session_hash']) {
+                    $errorMessage = "<p style='background-color:Tomato;'>This user is already logged in.</p>";
+                } else {
+                    $_SESSION["logged_in_user"] = $username;
+                    $_SESSION["user_id"] = $userInfo['UserID']; // Ensure the user ID is set here
+                    $sessionHash = sha1(time()); //hash algoritm
+                    $_SESSION["session_hash"] = $sessionHash;
+                    storeSessionHash($userInfo['UserID'], $sessionHash);
+                    header("Location: generate_shopping_list.php");
+                    exit();
+                  }
+                } else {
+                  $errorMessage = "<p style='background-color:Tomato;'>Wrong username or password.</p>";
+                }
+          } else {
+              $errorMessage = "<p style='background-color:Tomato;'>No such user exists.</p>";
             }
-        } else {
-            $errorMessage = "<p style='background-color:Tomato;'>No such user exists.</p>";
-        }
     }
 }
 ?>

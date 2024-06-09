@@ -1,16 +1,18 @@
 <?php
 session_start();
 include 'functions.php'; // Ensure this path is correct
-include 'logoutheader.php';
-
 
 if (!isset($_SESSION["logged_in_user"]) || !isset($_SESSION["user_id"])) {
     header("Location: index.php"); // Redirect to login if not logged in
     exit();
 }
 
-// Clear the user's shopping list from the session
-unset($_SESSION['shopping_list']);
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['log_out'])) {
+    header("Location: logout.php");
+    exit();
+}
+
+//unset($_SESSION['shopping_list']);
 ?>
 <!DOCTYPE html>
 <html lang="sv">
@@ -26,8 +28,11 @@ unset($_SESSION['shopping_list']);
 <body>
     <div class="container">
         <h1>Tack för ditt köp!</h1>
-        <p>Din köp har registreras i databasen.</p>
-        <a href="generate_shopping_list.php" class="btn btn-primary">Tillbaka till Inköpslista</a>
+        <p>Ditt köp har registreras i databasen.</p>
+        <form action="feedback.php" method="post">
+            <button type="submit" name="log_out" class="btn btn-danger">Logga ut</button>
+        
+        </form>
     </div>
 </body>
 </html>

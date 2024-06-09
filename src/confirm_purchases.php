@@ -56,6 +56,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['finalize_purchases']))
             }
         }
     }
+    emptyShoppingList($userId, $itemId, $quantity, $db);
     header("Location: feedback.php");
     exit();
 }
@@ -68,11 +69,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['finalize_purchases']))
                 <?php foreach ($shoppingList as $item): ?>
                     <li class="list-group-item">
                         <input type="checkbox" name="purchased_items[]" value="<?= $item['ItemID'] ?>">
-                        <?= htmlspecialchars($item['ItemName']) ?> (<?= htmlspecialchars($item['Quantity']) ?> st)
+                        <?= htmlspecialchars($item['ItemName']) ?> <!--(<?= htmlspecialchars($item['Quantity']) ?> st)-->
                         <input type="hidden" name="quantity_<?= $item['ItemID'] ?>" value="<?= $item['Quantity'] ?>">
-                        <label for="replacement_<?= $item['ItemID'] ?>">Ersätt med:</label>
+                        <label for="replacement_<?= $item['ItemID'] ?>">eller...</label>
                         <select name="replacements[<?= $item['ItemID'] ?>]" id="replacement_<?= $item['ItemID'] ?>" class="form-control">
-                            <option value="">-- Välj vara --</option>
+                            <option value="">-- Ersättningsvara --</option>
                             <?php foreach ($allItems as $allItem): ?>
                                 <option value="<?= $allItem['ItemID'] ?>"><?= htmlspecialchars($allItem['ItemName']) ?></option>
                             <?php endforeach; ?>
@@ -92,8 +93,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['finalize_purchases']))
                         <option value="<?= $item['ItemID'] ?>"><?= htmlspecialchars($item['ItemName']) ?></option>
                     <?php endforeach; ?>
                 </select>
-                <label for="quantity">Antal:</label>
-                <input type="number" name="quantity" id="quantity" class="form-control" value="1" min="1">
             </div>
             <button type="submit" name="add_item" class="btn btn-primary">Lägg till</button>
         </form>
@@ -112,8 +111,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['finalize_purchases']))
             <div class="form-group">
                 <label for="new_item_name">Lägg till ny vara:</label>
                 <input type="text" name="new_item_name" id="new_item_name" class="form-control">
-                <label for="new_item_quantity">Antal:</label>
-                <input type="number" name="new_item_quantity" id="new_item_quantity" class="form-control" value="1" min="1">
             </div>
             <button type="submit" name="add_new_item" class="btn btn-primary">Lägg till ny vara</button>
         </form>
