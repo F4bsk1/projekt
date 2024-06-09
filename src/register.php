@@ -14,7 +14,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST") {
     $username = $_POST['username'] ?? '';
     $password = $_POST['password'] ?? '';
 
-    //check för tomma fält
+    //check för tomma fält 
     if(empty($username) || empty($password)) {
         //skriv ut felmedelande till användaren
         echo "Please fill in both username and password";
@@ -32,7 +32,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST") {
         //logga in användaren
         $_SESSION["logged_in_user"] = $username;
         //till menysidan
-        header("Location: menu.php");
+        header("Location: generate_shopping_list.php");
         exit();
     } else {
         echo "Error signing up, please try again";

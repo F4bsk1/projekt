@@ -16,7 +16,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $_SESSION["logged_in_user"] = $username;
                 $_SESSION["user_id"] = $userInfo['UserID']; // Ensure the user ID is set here
                 session_regenerate_id(true); // Secure the session by regenerating the session ID
-                header("Location: menu.php");
+                header("Location: generate_shopping_list.php");
                 exit();
             } else {
                 $errorMessage = "<p style='background-color:Tomato;'>Wrong username or password.</p>";

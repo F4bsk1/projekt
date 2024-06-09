@@ -27,7 +27,7 @@ unset($_SESSION['shopping_list']);
     <div class="container">
         <h1>Tack för ditt köp!</h1>
         <p>Din köp har registreras i databasen.</p>
-        <a href="menu.php" class="btn btn-primary">Tillbaka till Menyn</a>
+        <a href="generate_shopping_list.php" class="btn btn-primary">Tillbaka till Inköpslista</a>
     </div>
 </body>
 </html>

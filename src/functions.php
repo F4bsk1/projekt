@@ -1,5 +1,6 @@
 <?php
 //Här ska du lägga till flera funktioner
+//inköpslistan måste clearas efter den är bekräftad.
 
 function addUser($username, $password){
     //öppna databasen genom skapa instans och ange sökvägen
@@ -68,24 +69,23 @@ function checkPassword($inputPassword, $username){
 function getRecommendedItems($userId, $db) {
     // Get items based on purchase history and items that haven't been purchased
     $sql = "
-        SELECT i.ItemID, i.ItemName,
-               MAX(p.PurchaseDate) AS LastPurchaseDate,
-               AVG(julianday('now') - julianday(p.PurchaseDate)) AS AvgInterval,
-               julianday('now') - julianday(MAX(p.PurchaseDate)) AS DaysSinceLastPurchase
+        SELECT 
+            i.ItemID,
+            i.ItemName AS ItemName, 
+            MAX(p.PurchaseDate) AS LastPurchaseDate,
+            AVG(p.DateDiff) AS AvgInterval
         FROM Items i
-        LEFT JOIN PurchaseDetails pd ON i.ItemID = pd.ItemID
-        LEFT JOIN Purchases p ON pd.PurchaseID = p.PurchaseID AND p.UserID = :userId
-        GROUP BY i.ItemID
-        HAVING LastPurchaseDate IS NULL OR DaysSinceLastPurchase > AvgInterval
-        UNION
-        SELECT i.ItemID, i.ItemName,
-               NULL AS LastPurchaseDate,
-               NULL AS AvgInterval,
-               NULL AS DaysSinceLastPurchase
-        FROM Items i
-        LEFT JOIN PurchaseDetails pd ON i.ItemID = pd.ItemID
-        LEFT JOIN Purchases p ON pd.PurchaseID = p.PurchaseID AND p.UserID = :userId
-        WHERE pd.ItemID IS NULL
+        LEFT JOIN (
+            SELECT 
+                PurchaseDetails.ItemID, 
+                Purchases.PurchaseDate,
+                julianday(Purchases.PurchaseDate) - lag(julianday(Purchases.PurchaseDate)) 
+                OVER (PARTITION BY PurchaseDetails.ItemID ORDER BY Purchases.PurchaseDate) AS DateDiff
+            FROM Purchases
+            JOIN PurchaseDetails ON Purchases.PurchaseID = PurchaseDetails.PurchaseID
+            WHERE Purchases.UserID = :userId 
+        ) p ON i.ItemID = p.ItemID
+        GROUP BY i.ItemID;
     ";
     $stmt = $db->prepare($sql);
     $stmt->bindValue(':userId', $userId, SQLITE3_INTEGER);
@@ -152,7 +152,7 @@ function addNewItem($itemName, $db) {
         return $db->lastInsertRowID();
     }
 }
-
+//se över namnen
 function addItemToList($userId, $itemId, $db, $quantity = 1) {
     // Check if the item is already in the list
     $stmt = $db->prepare('SELECT COUNT(*) as count FROM UserShoppingList WHERE UserID = :userId AND ItemID = :itemId');
@@ -215,7 +215,14 @@ function updatePurchaseDate($userId, $itemId, $quantity, $db) {
     $stmt->execute();
 }
 
-
+//Ta bort replecement tablet och lägg in båda varorna direkt med datum 
+// Function to add a replacement to the Replacements table
+function addReplacement($originalItemId, $replacementItemId, $db) {
+    $stmt = $db->prepare('INSERT INTO Replacements (OriginalItemID, ReplacementItemID) VALUES (:originalItemId, :replacementItemId)');
+    $stmt->bindValue(':originalItemId', $originalItemId, SQLITE3_INTEGER);
+    $stmt->bindValue(':replacementItemId', $replacementItemId, SQLITE3_INTEGER);
+    $stmt->execute();
+}
 //från labbinstruktionen
 // //Observera att följande funktion är sårbar för sql-injection och behöver förbättras
 // function selectPwd($username){
@@ -237,5 +244,3 @@ function updatePurchaseDate($userId, $itemId, $quantity, $db) {
 //     return $row;
 // }
 ?>
-
-

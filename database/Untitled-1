@@ -2,106 +2,19 @@
 
 -- Use the ▷ button in the top right corner to run the entire file.
 
-
-CREATE TABLE users (
-    UserID INTEGER PRIMARY KEY AUTOINCREMENT,
-    Username VARCHAR(255) NOT NULL UNIQUE,
-    Password VARCHAR(255) NOT NULL
-);
-
-CREATE TABLE Items (
-    ItemID INTEGER PRIMARY KEY AUTOINCREMENT,
-    Name TEXT NOT NULL,
-    Quantity INTEGER NOT NULL DEFAULT 0  -- Tracks current stock levels
-);
-
-CREATE TABLE Purchases (
-    PurchaseID INTEGER PRIMARY KEY AUTOINCREMENT,
+SELECT * FROM users;
+CREATE TABLE IF NOT EXISTS UserShoppingList (
     UserID INTEGER,
-    PurchaseDate DATE NOT NULL,
-    FOREIGN KEY (UserID) REFERENCES Users(UserID)
-);
-
-CREATE TABLE PurchaseDetails (
-    DetailID INTEGER PRIMARY KEY AUTOINCREMENT,
-    PurchaseID INTEGER,
     ItemID INTEGER,
-    Quantity INTEGER NOT NULL,
-    FOREIGN KEY (PurchaseID) REFERENCES Purchases(PurchaseID),
+    FOREIGN KEY (UserID) REFERENCES users(UserID),
     FOREIGN KEY (ItemID) REFERENCES Items(ItemID)
 );
 
+SELECT Items.ItemID, Items.ItemName, UserShoppingList.Quantity 
+FROM UserShoppingList 
+JOIN Items ON UserShoppingList.ItemID = Items.ItemID 
+WHERE UserShoppingList.UserID = (SELECT UserID FROM users WHERE Username = 'Kevin');
 
---data för varor i butiken 
+DELETE FROM UserShoppingList WHERE UserID = 'Kevin' AND ItemID = '1';
 
-INSERT INTO Items (Name, Quantity) VALUES ('Mjölk', 100);  -- Milk
-INSERT INTO Items (Name, Quantity) VALUES ('Bröd', 100);  -- Bread
-INSERT INTO Items (Name, Quantity) VALUES ('Ägg', 100);   -- Eggs
-INSERT INTO Items (Name, Quantity) VALUES ('Bananer', 100); -- Bananas
-INSERT INTO Items (Name, Quantity) VALUES ('Yoghurt', 100); -- Yogurt
-
-INSERT INTO Items (Name, Quantity) VALUES ('Tvättmedel', 100);  -- Laundry detergent
-INSERT INTO Items (Name, Quantity) VALUES ('Toalettpapper', 100); -- Toilet paper
-INSERT INTO Items (Name, Quantity) VALUES ('Olja', 100);  -- Cooking oil
-INSERT INTO Items (Name, Quantity) VALUES ('Ris', 100);   -- Rice
-INSERT INTO Items (Name, Quantity) VALUES ('Pasta', 100); -- Pasta
-
-
--- lite köphistorik för fabian, kevin, alex
--- Kevin's Purchases (UserID = 4)
--- Buys milk, bread, and eggs more frequently
-INSERT INTO Purchases (UserID, PurchaseDate) VALUES (4, '2024-01-01');
-INSERT INTO PurchaseDetails (PurchaseID, ItemID, Quantity) VALUES (1, 1, 1); -- Mjölk
-INSERT INTO PurchaseDetails (PurchaseID, ItemID, Quantity) VALUES (1, 2, 1); -- Bröd
-
-INSERT INTO Purchases (UserID, PurchaseDate) VALUES (4, '2024-01-05');
-INSERT INTO PurchaseDetails (PurchaseID, ItemID, Quantity) VALUES (2, 1, 1); -- Mjölk
-INSERT INTO PurchaseDetails (PurchaseID, ItemID, Quantity) VALUES (2, 3, 10); -- Ägg
-
-INSERT INTO Purchases (UserID, PurchaseDate) VALUES (4, '2024-01-10');
-INSERT INTO PurchaseDetails (PurchaseID, ItemID, Quantity) VALUES (3, 1, 1); -- Mjölk
-INSERT INTO PurchaseDetails (PurchaseID, ItemID, Quantity) VALUES (3, 2, 1); -- Bröd
-
-INSERT INTO Purchases (UserID, PurchaseDate) VALUES (4, '2024-01-15');
-INSERT INTO PurchaseDetails (PurchaseID, ItemID, Quantity) VALUES (4, 1, 1); -- Mjölk
-INSERT INTO PurchaseDetails (PurchaseID, ItemID, Quantity) VALUES (4, 3, 10); -- Ägg
-
-INSERT INTO Purchases (UserID, PurchaseDate) VALUES (4, '2024-01-20');
-INSERT INTO PurchaseDetails (PurchaseID, ItemID, Quantity) VALUES (5, 2, 1); -- Bröd
-
--- Fabian's Purchases (UserID = 5)
--- Similar pattern with frequent purchases of milk, bread, and eggs
-INSERT INTO Purchases (UserID, PurchaseDate) VALUES (5, '2024-01-02');
-INSERT INTO PurchaseDetails (PurchaseID, ItemID, Quantity) VALUES (6, 1, 1); -- Mjölk
-
-INSERT INTO Purchases (UserID, PurchaseDate) VALUES (5, '2024-01-07');
-INSERT INTO PurchaseDetails (PurchaseID, ItemID, Quantity) VALUES (7, 2, 1); -- Bröd
-INSERT INTO PurchaseDetails (PurchaseID, ItemID, Quantity) VALUES (7, 3, 10); -- Ägg
-
-INSERT INTO Purchases (UserID, PurchaseDate) VALUES (5, '2024-01-12');
-INSERT INTO PurchaseDetails (PurchaseID, ItemID, Quantity) VALUES (8, 1, 1); -- Mjölk
-
-INSERT INTO Purchases (UserID, PurchaseDate) VALUES (5, '2024-01-17');
-INSERT INTO PurchaseDetails (PurchaseID, ItemID, Quantity) VALUES (9, 1, 1); -- Mjölk
-INSERT INTO PurchaseDetails (PurchaseID, ItemID, Quantity) VALUES (9, 2, 1); -- Bröd
-
--- Alex's Purchases (UserID = 6)
--- Buys milk, bread, eggs, and occasionally other items
-INSERT INTO Purchases (UserID, PurchaseDate) VALUES (6, '2024-01-03');
-INSERT INTO PurchaseDetails (PurchaseID, ItemID, Quantity) VALUES (10, 1, 1); -- Mjölk
-INSERT INTO PurchaseDetails (PurchaseID, ItemID, Quantity) VALUES (10, 4, 5); -- Bananer
-
-INSERT INTO Purchases (UserID, PurchaseDate) VALUES (6, '2024-01-08');
-INSERT INTO PurchaseDetails (PurchaseID, ItemID, Quantity) VALUES (11, 1, 1); -- Mjölk
-INSERT INTO PurchaseDetails (PurchaseID, ItemID, Quantity) VALUES (11, 3, 10); -- Ägg
-
-INSERT INTO Purchases (UserID, PurchaseDate) VALUES (6, '2024-01-13');
-INSERT INTO PurchaseDetails (PurchaseID, ItemID, Quantity) VALUES (12, 2, 1); -- Bröd
-
-SELECT i.Name, MAX(p.PurchaseDate) AS LastPurchaseDate, 
-            AVG(julianday('now') - julianday(p.PurchaseDate)) AS AvgInterval
-            FROM Purchases p
-            JOIN PurchaseDetails pd ON p.PurchaseID = pd.PurchaseID
-            JOIN Items i ON pd.ItemID = i.ItemID
-            WHERE p.UserID = :userId
-            GROUP BY i.ItemID
+INSERT INTO UserShoppingList (UserID, ItemID, Quantity) VALUES (4, 1, 1);

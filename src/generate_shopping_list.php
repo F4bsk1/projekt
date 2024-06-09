@@ -1,7 +1,8 @@
 <?php
-session_start();
-include 'functions.php'; // Ensure this path is correct
+session_start(); 
+include 'functions.php';
 include 'logoutheader.php';
+
 
 if (!isset($_SESSION["logged_in_user"]) || !isset($_SESSION["user_id"])) {
     header("Location: index.php"); // Redirect to login if not logged in
@@ -41,6 +42,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['delete_item_permanentl
     exit();
 }
 
+//SKIT I DENNA OM DB updateras direkt (troligtvis) men dock reroute vid klick på spara
 // Handle form submission for finalizing the list
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['finalize_list'])) {
     // Add recommended items to UserShoppingList
@@ -50,8 +52,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['finalize_list'])) {
     header("Location: confirm_purchases.php");
     exit();
 }
+//ta bort forech för rekomenderade items
 ?>
-
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -65,7 +67,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['finalize_list'])) {
         .delete-button { float: right; }
     </style>
 </head>
-<body>
+<body> 
     <div class="container">
         <h2>Rekommenderad Inköpslista</h2>
         <div class="list-box">
